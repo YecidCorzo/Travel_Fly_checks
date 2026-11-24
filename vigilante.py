@@ -321,9 +321,16 @@ def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict)
         v = parse_tarjeta(t.get("principal", ""), t.get("texto", ""))
         debug.append(f"{'OK ' + str(asdict(v)) if v else 'NO LEÍDO'}\n"
                      f"  principal: {t.get('principal')}\n  texto: {t.get('texto')}")
-        if not v or v.texto in vistos:
+        if not v:
             continue
-        vistos.add(v.texto)
+        # Google repite cada vuelo en tarjetas anidadas: quedarse con una (la que tiene horario)
+        clave = (v.precio, v.aerolineas, v.duracion, v.escalas)
+        if clave in vistos:
+            if v.salida != "?":
+                vuelos = [x if (x.precio, x.aerolineas, x.duracion, x.escalas) != clave
+                          or x.salida != "?" else v for x in vuelos]
+            continue
+        vistos.add(clave)
         if (v.escalas <= cfg["max_escalas"]
                 and aerolinea_permitida(v, cfg["aerolineas"])
                 and duracion_permitida(v, cfg.get("max_horas_vuelo"))):
