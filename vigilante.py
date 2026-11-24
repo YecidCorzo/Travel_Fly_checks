@@ -327,7 +327,9 @@ class Opcion:
 def revisar_grupo(page, g: dict, cfg: dict) -> dict:
     """Hace las búsquedas de un grupo y devuelve todo lo necesario para el informe."""
     O, D = cfg["aeropuerto_origen"], cfg["aeropuerto_destino"]
-    o, d, n, esc = cfg["origen"], cfg["destino"], g["adultos"], cfg["max_escalas"]
+    # Jóvenes de 12+ años pagan como adultos en Google Flights
+    o, d, esc = cfg["origen"], cfg["destino"], cfg["max_escalas"]
+    n = g.get("adultos", 0) + g.get("jovenes", 0)
     k = g.get("ninos", 0)
     nombre = g["nombre"]
 
@@ -478,7 +480,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
             f"<div class='opt {'best' if op is mejor else ''}'>"
             f"<div class='opt-tipo'>{e(op.tipo)}{' · mejor' if op is mejor else ''}</div>"
             f"<div class='opt-precio'>{sek(op.precio)}</div>"
-            f"<div class='opt-pp'>{sek(round(op.precio / (g['adultos'] + g.get('ninos', 0))))} por persona</div>"
+            f"<div class='opt-pp'>{sek(round(op.precio / (g.get('adultos', 0) + g.get('jovenes', 0) + g.get('ninos', 0))))} por persona</div>"
             f"<div class='opt-det'>{e(op.detalle)}</div>"
             f"<a href='{e(op.url)}' target='_blank'>Abrir en Google Flights →</a></div>"
             for op in r["opciones"]
@@ -509,7 +511,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
 <section class='card'>
   <div class='card-head'>
     <div><h3>{e(g['nombre'])}</h3>
-      <div class='muted'>{e(g['ida'])} → {e(g.get('vuelta') or 'solo ida')} · {g['adultos']} adulto(s){f" + {g['ninos']} niño(s)" if g.get('ninos') else ''} ·
+      <div class='muted'>{e(g['ida'])} → {e(g.get('vuelta') or 'solo ida')} · {g.get('adultos', 0)} adulto(s){f" + {g['jovenes']} joven(es)" if g.get('jovenes') else ''}{f" + {g['ninos']} niño(s)" if g.get('ninos') else ''} ·
       {e(cfg['aeropuerto_origen'])} ⇄ {e(cfg['aeropuerto_destino'])}</div></div>
     <div class='big'>{sek(mejor.precio) if mejor else '—'}</div>
   </div>

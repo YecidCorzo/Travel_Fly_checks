@@ -11,7 +11,7 @@ Comprueba cada hora el precio de los vuelos de Semana Santa 2027 en Google Fligh
 
 A la ida van 4 (2 adultos + 2 jóvenes) y a la vuelta del 1 de abril vuelven 3.
 
-**Jóvenes y niños:** Google Flights cuenta a cualquiera de **12 años o más como adulto**, así que los jóvenes (*ungdom*) van en `adultos`. Los de 2 a 11 años van en `ninos`. Las tarifas especiales de joven de algunas aerolíneas (p. ej. SAS) no salen en Google Flights; mira la web de la aerolínea antes de comprar.
+**Jóvenes y niños:** Google Flights cuenta a cualquiera de **12 años o más como adulto**, así que los jóvenes (*ungdom*, 12–17) van en `jovenes` y el programa los busca como adultos. Los de 2 a 11 años van en `ninos`. Las tarifas especiales de joven de algunas aerolíneas (p. ej. SAS) no salen en Google Flights; mira la web de la aerolínea antes de comprar.
 
 - Máximo **1 escala**.
 - Solo **SAS, Norwegian y Lufthansa** (todas las aerolíneas del vuelo deben estar en la lista).
@@ -58,7 +58,7 @@ cp config.example.json config.json      # Windows: copy config.example.json conf
 
 | Campo | Qué hace |
 |---|---|
-| `busquedas` | Fechas, `adultos` (12+ años) y `ninos` (2–11) de cada búsqueda. Con `"vuelta": null` busca solo ida |
+| `busquedas` | Fechas, `adultos`, `jovenes` (12–17) y `ninos` (2–11) de cada búsqueda. Con `"vuelta": null` busca solo ida |
 | `aerolineas` | Aerolíneas permitidas (deja `[]` para aceptar cualquiera) |
 | `combinar_aerolineas` | `true` = compara también dos billetes de solo ida con aerolíneas distintas |
 | `aeropuerto_origen` / `aeropuerto_destino` | Códigos IATA (ARN = Arlanda, BCN = Barcelona) |
