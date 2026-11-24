@@ -8,9 +8,8 @@
   "combinar_aerolineas": true,
 
   "busquedas": [
-    { "nombre": "3 personas (26 mar – 1 abr)", "ida": "2027-03-26", "vuelta": "2027-04-01", "adultos": 3 },
-    { "nombre": "1 persona (26 mar – 4 abr)",  "ida": "2027-03-26", "vuelta": "2027-04-04", "adultos": 1 },
-    { "nombre": "1 persona solo ida (26 mar)", "ida": "2027-03-26", "vuelta": null,         "adultos": 1 }
+    { "nombre": "1 adulto + 2 jóvenes (26 mar – 1 abr)", "ida": "2027-03-26", "vuelta": "2027-04-01", "adultos": 3, "ninos": 0 },
+    { "nombre": "1 adulto (26 mar – 4 abr)",             "ida": "2027-03-26", "vuelta": "2027-04-04", "adultos": 1, "ninos": 0 }
   ],
 
   "precio_objetivo_total": null,

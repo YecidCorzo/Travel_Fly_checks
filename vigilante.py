@@ -186,7 +186,7 @@ def _campo_int(num: int, valor: int) -> bytes:
     return _varint(num << 3) + _varint(valor)
 
 
-def tfs_url(tramos: list[tuple[str, str, str]], adultos: int) -> str:
+def tfs_url(tramos: list[tuple[str, str, str]], adultos: int, ninos: int = 0) -> str:
     """
     URL exacta de Google Flights (parámetro tfs), con número de adultos y tipo
     de viaje fijados, sin depender de que Google entienda una frase.
@@ -198,7 +198,8 @@ def tfs_url(tramos: list[tuple[str, str, str]], adultos: int) -> str:
               + _campo_bytes(13, _campo_bytes(2, o.encode()))
               + _campo_bytes(14, _campo_bytes(2, d.encode())))
         info += _campo_bytes(3, fd)
-    info += _campo_bytes(8, b"".join(_varint(1) for _ in range(adultos)))  # adultos
+    pasajeros = [1] * adultos + [2] * ninos          # 1 = adulto (12+), 2 = niño (2-11)
+    info += _campo_bytes(8, b"".join(_varint(x) for x in pasajeros))
     info += _campo_int(9, 1)                                               # turista
     info += _campo_int(19, 1 if len(tramos) == 2 else 2)                   # ida y vuelta / solo ida
     tfs = base64.b64encode(info).decode()
@@ -207,15 +208,16 @@ def tfs_url(tramos: list[tuple[str, str, str]], adultos: int) -> str:
 
 
 def texto_url(origen: str, destino: str, ida: str, vuelta: str | None,
-              adultos: int, max_escalas: int) -> str:
+              adultos: int, max_escalas: int, ninos: int = 0) -> str:
     """URL de respaldo con búsqueda en lenguaje natural."""
     escalas_txt = "nonstop" if max_escalas == 0 else f"{max_escalas} stop or fewer"
+    pax = f"{adultos} adults" + (f" and {ninos} children" if ninos else "")
     if vuelta:
         q = (f"Flights from {origen} to {destino} on {ida} through {vuelta} "
-             f"for {adultos} adults {escalas_txt}")
+             f"for {pax} {escalas_txt}")
     else:
         q = (f"One way flights from {origen} to {destino} on {ida} "
-             f"for {adultos} adults {escalas_txt}")
+             f"for {pax} {escalas_txt}")
     params = {"q": q, "hl": "en", "gl": "SE", "curr": "SEK"}
     return "https://www.google.com/travel/flights?" + urllib.parse.urlencode(params)
 
@@ -326,12 +328,13 @@ def revisar_grupo(page, g: dict, cfg: dict) -> dict:
     """Hace las búsquedas de un grupo y devuelve todo lo necesario para el informe."""
     O, D = cfg["aeropuerto_origen"], cfg["aeropuerto_destino"]
     o, d, n, esc = cfg["origen"], cfg["destino"], g["adultos"], cfg["max_escalas"]
+    k = g.get("ninos", 0)
     nombre = g["nombre"]
 
     # Persona que solo vuela de ida (sin "vuelta" en la configuración)
     if not g.get("vuelta"):
-        b = buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n),
-                   texto_url(o, d, g["ida"], None, n, esc), nombre, cfg)
+        b = buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n, k),
+                   texto_url(o, d, g["ida"], None, n, esc, k), nombre, cfg)
         opciones = []
         if b.vuelos:
             v = b.vuelos[0]
@@ -346,14 +349,14 @@ def revisar_grupo(page, g: dict, cfg: dict) -> dict:
 
     busquedas: list[Busqueda] = [
         buscar(page, "ida y vuelta",
-               tfs_url([(g["ida"], O, D), (g["vuelta"], D, O)], n),
-               texto_url(o, d, g["ida"], g["vuelta"], n, esc), nombre, cfg)
+               tfs_url([(g["ida"], O, D), (g["vuelta"], D, O)], n, k),
+               texto_url(o, d, g["ida"], g["vuelta"], n, esc, k), nombre, cfg)
     ]
     if cfg.get("combinar_aerolineas", True):
-        busquedas.append(buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n),
-                                texto_url(o, d, g["ida"], None, n, esc), nombre, cfg))
-        busquedas.append(buscar(page, "solo vuelta", tfs_url([(g["vuelta"], D, O)], n),
-                                texto_url(d, o, g["vuelta"], None, n, esc), nombre, cfg))
+        busquedas.append(buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n, k),
+                                texto_url(o, d, g["ida"], None, n, esc, k), nombre, cfg))
+        busquedas.append(buscar(page, "solo vuelta", tfs_url([(g["vuelta"], D, O)], n, k),
+                                texto_url(d, o, g["vuelta"], None, n, esc, k), nombre, cfg))
 
     por_tipo = {b.tipo: b for b in busquedas}
     opciones: list[Opcion] = []
@@ -475,7 +478,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
             f"<div class='opt {'best' if op is mejor else ''}'>"
             f"<div class='opt-tipo'>{e(op.tipo)}{' · mejor' if op is mejor else ''}</div>"
             f"<div class='opt-precio'>{sek(op.precio)}</div>"
-            f"<div class='opt-pp'>{sek(round(op.precio / g['adultos']))} por persona</div>"
+            f"<div class='opt-pp'>{sek(round(op.precio / (g['adultos'] + g.get('ninos', 0))))} por persona</div>"
             f"<div class='opt-det'>{e(op.detalle)}</div>"
             f"<a href='{e(op.url)}' target='_blank'>Abrir en Google Flights →</a></div>"
             for op in r["opciones"]
@@ -506,7 +509,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
 <section class='card'>
   <div class='card-head'>
     <div><h3>{e(g['nombre'])}</h3>
-      <div class='muted'>{e(g['ida'])} → {e(g.get('vuelta') or 'solo ida')} · {g['adultos']} adulto(s) ·
+      <div class='muted'>{e(g['ida'])} → {e(g.get('vuelta') or 'solo ida')} · {g['adultos']} adulto(s){f" + {g['ninos']} niño(s)" if g.get('ninos') else ''} ·
       {e(cfg['aeropuerto_origen'])} ⇄ {e(cfg['aeropuerto_destino'])}</div></div>
     <div class='big'>{sek(mejor.precio) if mejor else '—'}</div>
   </div>
