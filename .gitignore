@@ -1,0 +1,6 @@
+config.json
+historial_precios.json
+vigilante.log
+ultimo_error.png
+__pycache__/
+.venv/

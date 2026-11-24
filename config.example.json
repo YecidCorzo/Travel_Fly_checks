@@ -1,0 +1,20 @@
+{
+  "origen": "Stockholm",
+  "destino": "Barcelona",
+  "max_escalas": 1,
+  "aerolineas": ["SAS", "Norwegian", "Lufthansa"],
+
+  "busquedas": [
+    { "nombre": "3 personas (26 mar – 1 abr)", "ida": "2027-03-26", "vuelta": "2027-04-01", "adultos": 3 },
+    { "nombre": "1 persona (26 mar – 4 abr)",  "ida": "2027-03-26", "vuelta": "2027-04-04", "adultos": 1 }
+  ],
+
+  "precio_objetivo_total": null,
+  "bajada_minima_sek": 200,
+  "intervalo_minutos": 60,
+
+  "notificaciones": {
+    "escritorio": true,
+    "ntfy_tema": ""
+  }
+}
