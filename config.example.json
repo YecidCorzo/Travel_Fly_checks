@@ -1,6 +1,8 @@
 {
   "origen": "Stockholm",
   "destino": "Barcelona",
+  "aeropuerto_origen": "ARN",
+  "aeropuerto_destino": "BCN",
   "max_escalas": 1,
   "aerolineas": ["SAS", "Norwegian", "Lufthansa"],
   "combinar_aerolineas": true,
@@ -13,6 +15,7 @@
   "precio_objetivo_total": null,
   "bajada_minima_sek": 200,
   "intervalo_minutos": 60,
+  "abrir_informe_si_baja": true,
 
   "notificaciones": {
     "escritorio": true,

@@ -19,6 +19,18 @@ Comprueba cada hora el precio de los vuelos de Semana Santa 2027 en Google Fligh
 - Cuando el total queda **por debajo de tu precio objetivo**, si lo pones.
 - Todo se guarda en `historial_precios.json`, así puedes ver si una "oferta" de verdad es más barata que lo que ya había.
 
+## Informe HTML
+
+Cada comprobación crea **`informe.html`** con:
+- el total del grupo y el mínimo histórico,
+- un gráfico de cómo evoluciona el precio,
+- para cada grupo, la opción más barata (ida y vuelta o combinada) y el precio por persona,
+- los vuelos que cumplen los filtros y una **captura de Google Flights** de cada búsqueda, para comprobar los precios.
+
+Ábrelo con `open informe.html` (Mac), o ejecuta `python vigilante.py --abrir`. Se abre solo cuando hay una bajada de precio.
+
+Si los precios parecen raros (por ejemplo, idénticos en todas las búsquedas), el informe lo marca con ⚠️ y no se envía aviso. Todo lo que el programa lee de Google se guarda en `debug_resultados.txt`.
+
 ## 1. Instalación
 
 Necesitas **Python 3.10 o más nuevo**.
@@ -26,9 +38,8 @@ Necesitas **Python 3.10 o más nuevo**.
 ```bash
 git clone https://github.com/YecidCorzo/Travel_Fly_checks.git
 cd Travel_Fly_checks
-python -m venv .venv
-# Windows:      .venv\Scripts\activate
-# macOS/Linux:  source .venv/bin/activate
+python3 -m venv .venv            # Windows: python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m playwright install chromium
 ```
@@ -46,6 +57,7 @@ cp config.example.json config.json      # Windows: copy config.example.json conf
 | `busquedas` | Fechas y número de adultos de cada búsqueda |
 | `aerolineas` | Aerolíneas permitidas (deja `[]` para aceptar cualquiera) |
 | `combinar_aerolineas` | `true` = compara también dos billetes de solo ida con aerolíneas distintas |
+| `aeropuerto_origen` / `aeropuerto_destino` | Códigos IATA (ARN = Arlanda, BCN = Barcelona) |
 | `max_escalas` | `1` = directo o una escala |
 | `precio_objetivo_total` | Ej. `12000`: avisa siempre que el total esté por debajo |
 | `bajada_minima_sek` | Cuánto tiene que bajar para contar como nuevo mínimo |
