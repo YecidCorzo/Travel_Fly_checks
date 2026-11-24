@@ -4,6 +4,7 @@
   "aeropuerto_origen": "ARN",
   "aeropuerto_destino": "BCN",
   "max_escalas": 1,
+  "max_horas_vuelo": 6,
   "aerolineas": ["SAS", "Norwegian", "Lufthansa"],
   "combinar_aerolineas": true,
 

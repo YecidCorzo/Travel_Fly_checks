@@ -13,7 +13,7 @@ A la ida van 4 (2 adultos + 2 jóvenes) y a la vuelta del 1 de abril vuelven 3.
 
 **Jóvenes y niños:** Google Flights cuenta a cualquiera de **12 años o más como adulto**, así que los jóvenes (*ungdom*, 12–17) van en `jovenes` y el programa los busca como adultos. Los de 2 a 11 años van en `ninos`. Las tarifas especiales de joven de algunas aerolíneas (p. ej. SAS) no salen en Google Flights; mira la web de la aerolínea antes de comprar.
 
-- Máximo **1 escala**.
+- Máximo **1 escala** y **6 horas** de viaje por trayecto (escala incluida).
 - Solo **SAS, Norwegian y Lufthansa** (todas las aerolíneas del vuelo deben estar en la lista).
 - **Combina aerolíneas:** además del billete de ida y vuelta, busca solo ida y solo vuelta por separado (p. ej. ida con Norwegian + vuelta con SAS) y se queda con lo más barato. Dentro de un vuelo con escala también acepta mezclas, como SAS + Lufthansa.
 - Suma el precio más barato de cada búsqueda y te da el **total para todo el grupo**, en SEK.
@@ -62,6 +62,7 @@ cp config.example.json config.json      # Windows: copy config.example.json conf
 | `aerolineas` | Aerolíneas permitidas (deja `[]` para aceptar cualquiera) |
 | `combinar_aerolineas` | `true` = compara también dos billetes de solo ida con aerolíneas distintas |
 | `aeropuerto_origen` / `aeropuerto_destino` | Códigos IATA (ARN = Arlanda, BCN = Barcelona) |
+| `max_horas_vuelo` | Duración máxima de cada trayecto, escalas incluidas (6 = hasta 6 h) |
 | `max_escalas` | `1` = directo o una escala |
 | `precio_objetivo_total` | Ej. `12000`: avisa siempre que el total esté por debajo |
 | `bajada_minima_sek` | Cuánto tiene que bajar para contar como nuevo mínimo |

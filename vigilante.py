@@ -155,6 +155,21 @@ def parse_tarjeta(principal: str, texto: str) -> Vuelo | None:
     )
 
 
+def minutos_duracion(texto: str) -> int | None:
+    """'5 hr 10 min' / '5 h 10 min' / '5h' / '50 min' -> minutos. None si no se sabe."""
+    m = re.search(r"(?:(\d+)\s*h(?:r|rs|ours?)?)?\s*(?:(\d+)\s*min)?", texto or "", re.I)
+    if not m or not (m.group(1) or m.group(2)):
+        return None
+    return int(m.group(1) or 0) * 60 + int(m.group(2) or 0)
+
+
+def duracion_permitida(vuelo: Vuelo, max_horas) -> bool:
+    if not max_horas:
+        return True
+    mins = minutos_duracion(vuelo.duracion)
+    return mins is None or mins <= float(max_horas) * 60
+
+
 def aerolinea_permitida(vuelo: Vuelo, permitidas: list[str]) -> bool:
     """Todas las aerolíneas del vuelo deben estar en la lista permitida."""
     if not permitidas:
@@ -302,7 +317,9 @@ def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict)
         if not v or v.texto in vistos:
             continue
         vistos.add(v.texto)
-        if v.escalas <= cfg["max_escalas"] and aerolinea_permitida(v, cfg["aerolineas"]):
+        if (v.escalas <= cfg["max_escalas"]
+                and aerolinea_permitida(v, cfg["aerolineas"])
+                and duracion_permitida(v, cfg.get("max_horas_vuelo"))):
             vuelos.append(v)
     try:
         with (BASE / "debug_resultados.txt").open("a", encoding="utf-8") as f:
@@ -573,7 +590,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
 <header class="hero">
   <h1>✈️ Estocolmo → Barcelona</h1>
   <div class="sub">Semana Santa 2027 · {', '.join(e(a) for a in cfg['aerolineas']) or 'todas las aerolíneas'}
-    · máx. {cfg['max_escalas']} escala(s)</div>
+    · máx. {cfg['max_escalas']} escala(s){f" · máx. {cfg['max_horas_vuelo']} h de vuelo" if cfg.get('max_horas_vuelo') else ''}</div>
   <div class="total">{sek(total)}</div>
   <div class="sub">total para todo el grupo</div>
   <span class="pill {estado[0]}">{estado[1]}</span>
