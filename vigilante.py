@@ -276,9 +276,20 @@ def notificar(titulo: str, mensaje: str, cfg: dict, url: str | None = None) -> N
     # 1) Notificación en el escritorio
     if avisos.get("escritorio", True):
         try:
-            from plyer import notification
-            notification.notify(title=titulo, message=mensaje[:250],
-                                app_name="Vigilante de vuelos", timeout=15)
+            if sys.platform == "darwin":
+                # macOS: notificación nativa con AppleScript
+                def esc(t: str) -> str:
+                    return t.replace("\\", "\\\\").replace('"', '\\"')
+                import subprocess
+                subprocess.run(
+                    ["osascript", "-e",
+                     f'display notification "{esc(mensaje[:250])}" '
+                     f'with title "{esc(titulo)}" sound name "Glass"'],
+                    check=True, timeout=15)
+            else:
+                from plyer import notification
+                notification.notify(title=titulo, message=mensaje[:250],
+                                    app_name="Vigilante de vuelos", timeout=15)
         except Exception as e:
             log(f"  (sin notificación de escritorio: {e})")
 
