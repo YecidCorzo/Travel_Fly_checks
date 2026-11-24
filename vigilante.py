@@ -298,17 +298,28 @@ def cargar_y_leer(page, url: str) -> list[dict] | None:
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     aceptar_cookies(page)
     # Espera (hasta ~35 s) a que haya tarjetas de vuelo y su número deje de cambiar
-    anterior, tarjetas = -1, []
+    anterior, estables, tarjetas = -1, 0, []
     for _ in range(25):
         page.wait_for_timeout(1400)
         try:
             tarjetas = page.evaluate(LEER_TARJETAS_JS, SELECTOR)
         except Exception:
             tarjetas = []
-        if len(tarjetas) >= 3 and len(tarjetas) == anterior:
+        estables = estables + 1 if (tarjetas and len(tarjetas) == anterior) else 0
+        if (len(tarjetas) >= 3 and estables >= 1) or estables >= 3:
             break
+        if not tarjetas and _sin_precio(page):
+            return None
         anterior = len(tarjetas)
     return tarjetas or None
+
+
+def _sin_precio(page) -> bool:
+    """Google muestra los vuelos pero sin precio ("Price unavailable")."""
+    try:
+        return page.get_by_text("Price unavailable").count() > 0
+    except Exception:
+        return False
 
 
 def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict) -> Busqueda:
@@ -320,6 +331,14 @@ def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict)
         log("  " + b.error)
         return b
     tarjetas = cargar_y_leer(page, url)
+    if not tarjetas and _sin_precio(page):
+        b.error = "Google muestra estos vuelos pero sin precio (Price unavailable)"
+        try:
+            b.captura = base64.b64encode(page.screenshot(type="jpeg", quality=55)).decode()
+        except Exception:
+            pass
+        log("  " + b.error)
+        return b
     if not tarjetas:
         try:
             page.screenshot(path=str(BASE / "ultimo_error_exacta.png"), full_page=True)
@@ -493,8 +512,11 @@ def revisar_solo_aerolinea(page, g: dict, cfg: dict, aerolinea: str) -> dict:
         v = bi.vuelos[0]
         opciones.append(Opcion(v.precio, "solo ida", f"{v.aerolineas} · {v.salida}", bi.url))
     mejor = min(opciones, key=lambda x: x.precio) if opciones else None
-    log(f"  Solo {aerolinea}: " + (f"{sek(mejor.precio)} ({mejor.tipo})" if mejor else "sin vuelos"))
-    return {"aerolinea": aerolinea, "busquedas": busquedas, "opciones": opciones, "mejor": mejor}
+    sin_precio = any("sin precio" in b.error for b in busquedas)
+    log(f"  Solo {aerolinea}: " + (f"{sek(mejor.precio)} ({mejor.tipo})" if mejor else
+                                    "vuela, pero Google no da precio" if sin_precio else "sin vuelos"))
+    return {"aerolinea": aerolinea, "busquedas": busquedas, "opciones": opciones,
+            "mejor": mejor, "sin_precio": sin_precio}
 
 
 # --------------------------------------------------------------------------- #
@@ -623,7 +645,10 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
                 f"<td>{'Directo' if v.escalas == 0 else f'{v.escalas} escala'}</td>"
                 f"<td class='num'>{sek(v.precio)}</td></tr>"
                 for b in x["busquedas"] for v in b.vuelos[:2]
-            ) or "<tr><td colspan='5' class='muted'>Google no muestra vuelos de esta aerolínea que cumplan los filtros</td></tr>"
+            ) or ("<tr><td colspan='5' class='muted'>"
+                  + e(next((b.error for b in x["busquedas"] if b.error),
+                           "Google no muestra vuelos de esta aerolínea que cumplan los filtros"))
+                  + "</td></tr>")
             m = x["mejor"]
             dif = (f" · {sek(m.precio - mejor.precio)} más que la mejor opción"
                    if m and mejor and m.precio > mejor.precio else "")
@@ -808,6 +833,8 @@ def comprobar(cfg: dict, visible: bool = False, abrir: bool = False) -> None:
             "opciones": [asdict(o) for o in r["opciones"]],
             "avisos": r["avisos"],
             "solo_aerolinea": {a: {"mejor": asdict(x["mejor"]) if x["mejor"] else None,
+                                   "sin_precio_en_google": x.get("sin_precio", False),
+                                   "errores": [b.error for b in x["busquedas"] if b.error],
                                    "opciones": [asdict(o) for o in x["opciones"]]}
                                for a, x in r.get("solo", {}).items()},
             "busquedas": [{"tipo": b.tipo, "resultados": b.total_resultados,
