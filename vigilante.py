@@ -292,8 +292,15 @@ def cargar_y_leer(page, url: str) -> list[dict] | None:
         page.wait_for_selector(SELECTOR, timeout=25000)
     except Exception:
         return None
-    page.wait_for_timeout(2500)
-    return page.evaluate(LEER_TARJETAS_JS, SELECTOR)
+    # Espera a que la lista termine de cargar: mismo número de tarjetas dos veces seguidas
+    anterior, tarjetas = -1, []
+    for _ in range(15):
+        page.wait_for_timeout(1500)
+        tarjetas = page.evaluate(LEER_TARJETAS_JS, SELECTOR)
+        if len(tarjetas) >= 3 and len(tarjetas) == anterior:
+            break
+        anterior = len(tarjetas)
+    return tarjetas
 
 
 def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict) -> Busqueda:
