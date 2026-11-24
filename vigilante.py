@@ -208,7 +208,8 @@ def _campo_int(num: int, valor: int) -> bytes:
     return _varint(num << 3) + _varint(valor)
 
 
-def tfs_url(tramos: list[tuple[str, str, str]], adultos: int, ninos: int = 0) -> str:
+def tfs_url(tramos: list[tuple[str, str, str]], adultos: int, ninos: int = 0,
+            aerolineas: list[str] | None = None) -> str:
     """
     URL exacta de Google Flights (parámetro tfs), con número de adultos y tipo
     de viaje fijados, sin depender de que Google entienda una frase.
@@ -219,6 +220,8 @@ def tfs_url(tramos: list[tuple[str, str, str]], adultos: int, ninos: int = 0) ->
         fd = (_campo_bytes(2, fecha.encode())
               + _campo_bytes(13, _campo_bytes(2, o.encode()))
               + _campo_bytes(14, _campo_bytes(2, d.encode())))
+        for codigo in aerolineas or []:                    # p. ej. "SK" = SAS
+            fd += _campo_bytes(6, codigo.encode())
         info += _campo_bytes(3, fd)
     pasajeros = [1] * adultos + [2] * ninos          # 1 = adulto (12+), 2 = niño (2-11)
     info += _campo_bytes(8, b"".join(_varint(x) for x in pasajeros))
@@ -428,6 +431,56 @@ def revisar_grupo(page, g: dict, cfg: dict) -> dict:
             "mejor": mejor, "avisos": avisos}
 
 
+CODIGOS_IATA = {"SAS": "SK", "Norwegian": "DY", "Lufthansa": "LH", "Finnair": "AY",
+                "KLM": "KL", "Vueling": "VY", "Iberia": "IB", "Air France": "AF"}
+
+
+def revisar_solo_aerolinea(page, g: dict, cfg: dict, aerolinea: str) -> dict:
+    """Mismas fechas y personas, pero solo con una aerolínea (p. ej. SAS)."""
+    codigo = CODIGOS_IATA.get(aerolinea, aerolinea)
+    O, D = cfg["aeropuerto_origen"], cfg["aeropuerto_destino"]
+    o, d, esc = cfg["origen"], cfg["destino"], cfg["max_escalas"]
+    n = g.get("adultos", 0) + g.get("jovenes", 0)
+    k = g.get("ninos", 0)
+    c = dict(cfg, aerolineas=[aerolinea])
+    nombre = f"{g['nombre']} · solo {aerolinea}"
+    a = [codigo]
+    def txt(oo, dd, ida, vta):
+        return texto_url(oo, dd, ida, vta, n, esc, k).replace("+1+stop", f"+on+{aerolinea}+1+stop")
+    busquedas = []
+    if g.get("vuelta"):
+        busquedas.append(buscar(page, "ida y vuelta",
+                                tfs_url([(g["ida"], O, D), (g["vuelta"], D, O)], n, k, a),
+                                txt(o, d, g["ida"], g["vuelta"]), nombre, c))
+        busquedas.append(buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n, k, a),
+                                txt(o, d, g["ida"], None), nombre, c))
+        busquedas.append(buscar(page, "solo vuelta", tfs_url([(g["vuelta"], D, O)], n, k, a),
+                                txt(d, o, g["vuelta"], None), nombre, c))
+    else:
+        busquedas.append(buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n, k, a),
+                                txt(o, d, g["ida"], None), nombre, c))
+    por_tipo = {b.tipo: b for b in busquedas}
+    opciones: list[Opcion] = []
+    iv = por_tipo.get("ida y vuelta")
+    if iv and iv.vuelos:
+        v = iv.vuelos[0]
+        opciones.append(Opcion(v.precio, "ida y vuelta",
+                               f"{v.aerolineas} · {v.salida}–{v.llegada} · {v.escalas} escala/s",
+                               iv.url))
+    bi, bv = por_tipo.get("solo ida"), por_tipo.get("solo vuelta")
+    if bi and bv and bi.vuelos and bv.vuelos:
+        vi, vv = bi.vuelos[0], bv.vuelos[0]
+        opciones.append(Opcion(vi.precio + vv.precio, "combinada",
+                               f"Ida {vi.salida} {sek(vi.precio)} + Vuelta {vv.salida} {sek(vv.precio)}",
+                               bi.url))
+    elif bi and bi.vuelos and not g.get("vuelta"):
+        v = bi.vuelos[0]
+        opciones.append(Opcion(v.precio, "solo ida", f"{v.aerolineas} · {v.salida}", bi.url))
+    mejor = min(opciones, key=lambda x: x.precio) if opciones else None
+    log(f"  Solo {aerolinea}: " + (f"{sek(mejor.precio)} ({mejor.tipo})" if mejor else "sin vuelos"))
+    return {"aerolinea": aerolinea, "busquedas": busquedas, "opciones": opciones, "mejor": mejor}
+
+
 # --------------------------------------------------------------------------- #
 # Notificaciones
 # --------------------------------------------------------------------------- #
@@ -503,7 +556,8 @@ def _grafico_historial(registros: list[dict]) -> str:
 
 
 def generar_informe(resultados: list[dict], total: int | None, historial: dict,
-                    motivos: list[str], cfg: dict) -> None:
+                    motivos: list[str], cfg: dict, totales_solo: dict | None = None) -> None:
+    totales_solo = totales_solo or {}
     e = html.escape
     ahora = datetime.now().strftime("%d/%m/%Y %H:%M")
     minimo = historial.get("minimos", {}).get("total")
@@ -545,6 +599,25 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
 </div>""")
 
         avisos = "".join(f"<div class='aviso'>⚠️ {e(a)}</div>" for a in r["avisos"])
+        bloques_solo = []
+        for aero, x in r.get("solo", {}).items():
+            filas = "".join(
+                f"<tr><td>{e(b.tipo)}</td><td>{e(v.salida)} – {e(v.llegada)}</td>"
+                f"<td>{e(v.duracion)}</td>"
+                f"<td>{'Directo' if v.escalas == 0 else f'{v.escalas} escala'}</td>"
+                f"<td class='num'>{sek(v.precio)}</td></tr>"
+                for b in x["busquedas"] for v in b.vuelos[:2]
+            ) or "<tr><td colspan='5' class='muted'>Google no muestra vuelos de esta aerolínea que cumplan los filtros</td></tr>"
+            m = x["mejor"]
+            dif = (f" · {sek(m.precio - mejor.precio)} más que la mejor opción"
+                   if m and mejor and m.precio > mejor.precio else "")
+            bloques_solo.append(f"""
+<div class='solo'>
+  <h4>Solo {e(aero)}: {sek(m.precio) if m else '—'}
+    <span class='muted'>{e(m.tipo) if m else ''}{e(dif)}</span></h4>
+  <table><thead><tr><th>Billete</th><th>Horario</th><th>Duración</th><th>Escalas</th>
+  <th class='num'>Precio</th></tr></thead><tbody>{filas}</tbody></table>
+</div>""")
         grupos_html.append(f"""
 <section class='card'>
   <div class='card-head'>
@@ -555,6 +628,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
   </div>
   {avisos}
   <div class='opts'>{opciones}</div>
+  {''.join(bloques_solo)}
   {''.join(tablas)}
 </section>""")
 
@@ -602,6 +676,9 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
   .num {{ text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }}
   details {{ margin-top:8px; }} summary {{ cursor:pointer; color:var(--blue); font-size:13px; }}
   details img {{ width:100%; border-radius:10px; margin-top:8px; border:1px solid var(--line); }}
+  .solo {{ margin-top:16px; padding:4px 14px 10px; border-radius:12px; background:#eff6ff;
+          border:1px solid #bfdbfe; }}
+  .solo h4 {{ color:#1e3a8a; }}
   .aviso {{ background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:10px 12px;
            border-radius:10px; margin-top:12px; font-size:14px; }}
   .chart {{ width:100%; height:auto; }} .lbl {{ font-size:12px; fill:#64748b; }}
@@ -616,7 +693,8 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
   <div class="sub">total para todo el grupo</div>
   <span class="pill {estado[0]}">{estado[1]}</span>
   {f'<ul>{motivos_html}</ul>' if motivos_html else ''}
-  <div class="stats"><div>📉 Mínimo histórico: <b>{sek(minimo)}</b></div>
+  <div class="stats">{''.join(f"<div>✈️ Solo {e(a)}: <b>{sek(t)}</b></div>" for a, t in totales_solo.items())}
+    <div>📉 Mínimo histórico: <b>{sek(minimo)}</b></div>
     <div>🕒 Comprobado: <b>{ahora}</b></div></div>
 </header>
 <section class="card"><h3>Evolución del precio total</h3>{_grafico_historial(historial.get('registros', []))}</section>
@@ -660,14 +738,23 @@ def comprobar(cfg: dict, visible: bool = False, abrir: bool = False) -> None:
                                       viewport={"width": 1280, "height": 1100})
         page = context.new_page()
         resultados = [revisar_grupo(page, g, cfg) for g in cfg["busquedas"]]
+        for aero in cfg.get("comparar_tambien_solo", ["SAS"]):
+            for r in resultados:
+                r.setdefault("solo", {})[aero] = revisar_solo_aerolinea(page, r["grupo"], cfg, aero)
         browser.close()
+
+    totales_solo = {}
+    for aero in cfg.get("comparar_tambien_solo", ["SAS"]):
+        mejores = [r.get("solo", {}).get(aero, {}).get("mejor") for r in resultados]
+        totales_solo[aero] = sum(m.precio for m in mejores) if all(mejores) else None
+        log(f"TOTAL solo {aero}: {sek(totales_solo[aero])}")
 
     completo = all(r["mejor"] for r in resultados)
     dudoso = any(r["avisos"] for r in resultados)
     total = sum(r["mejor"].precio for r in resultados) if completo else None
     motivos: list[str] = []
 
-    registro = {"fecha": ahora, "total": total,
+    registro = {"fecha": ahora, "total": total, "totales_solo": totales_solo,
                 "grupos": {r["grupo"]["nombre"]: asdict(r["mejor"]) if r["mejor"] else None
                            for r in resultados}}
     historial["registros"].append(registro)
@@ -698,18 +785,23 @@ def comprobar(cfg: dict, visible: bool = False, abrir: bool = False) -> None:
         "total": total if completo else None,
         "minimo_historico": historial.get("minimos", {}),
         "motivos_aviso": motivos,
+        "totales_solo_aerolinea": totales_solo,
         "grupos": [{
             "nombre": r["grupo"]["nombre"],
             "mejor": asdict(r["mejor"]) if r["mejor"] else None,
             "opciones": [asdict(o) for o in r["opciones"]],
             "avisos": r["avisos"],
+            "solo_aerolinea": {a: {"mejor": asdict(x["mejor"]) if x["mejor"] else None,
+                                   "opciones": [asdict(o) for o in x["opciones"]]}
+                               for a, x in r.get("solo", {}).items()},
             "busquedas": [{"tipo": b.tipo, "resultados": b.total_resultados,
                            "cumplen_filtros": len(b.vuelos), "error": b.error,
                            "top": [asdict(v) | {"texto": None} for v in b.vuelos[:3]]}
                           for b in r["busquedas"]],
         } for r in resultados],
     })
-    generar_informe(resultados, total if completo else None, historial, motivos, cfg)
+    generar_informe(resultados, total if completo else None, historial, motivos, cfg,
+                    totales_solo)
 
     if motivos:
         lineas = [f"{r['grupo']['nombre']}: {sek(r['mejor'].precio)} ({r['mejor'].tipo})"

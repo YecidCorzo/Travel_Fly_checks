@@ -7,6 +7,7 @@
   "max_horas_vuelo": 6,
   "aerolineas": ["SAS", "Norwegian", "Lufthansa"],
   "combinar_aerolineas": true,
+  "comparar_tambien_solo": ["SAS"],
 
   "busquedas": [
     { "nombre": "1 adulto + 2 jóvenes (26 mar – 1 abr)", "ida": "2027-03-26", "vuelta": "2027-04-01", "adultos": 1, "jovenes": 2, "ninos": 0 },
