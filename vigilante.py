@@ -78,7 +78,8 @@ class Vuelo:
     texto: str
 
 
-PRICE_RE = re.compile(r"From\s+([\d.,\s ]+)\s+Swedish kronor", re.I)
+PRICE_RE = re.compile(r"(\d[\d.,\u00a0\u202f ]*\d|\d)\s*(?:Swedish kronor|SEK|kr)\b", re.I)
+SELECTOR = "[aria-label*='kronor'], [aria-label*='SEK']"
 STOPS_RE = re.compile(r"(Nonstop|(\d+)\s+stops?)\s+flight", re.I)
 AIRLINE_RE = re.compile(r"flight with\s+(.+?)\.", re.I)
 LEAVES_RE = re.compile(r"Leaves\s+(.+?)\s+and arrives", re.I)
@@ -147,10 +148,12 @@ def buscar(page, url: str, nombre: str, cfg: dict) -> list[Vuelo]:
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     aceptar_cookies(page)
     try:
-        page.wait_for_selector("li [aria-label*='Swedish kronor']", timeout=45000)
+        page.wait_for_selector(SELECTOR, timeout=30000)
     except Exception:
         page.screenshot(path=str(BASE / "ultimo_error.png"), full_page=True)
-        raise RuntimeError("No aparecieron resultados (captura en ultimo_error.png)")
+        (BASE / "ultimo_error.html").write_text(page.content(), encoding="utf-8")
+        raise RuntimeError(f"No aparecieron resultados en {page.url} "
+                           "(captura en ultimo_error.png)")
     page.wait_for_timeout(2500)  # deja que terminen de cargar los precios
 
     # Abre "más vuelos" si existe, para no perder opciones
@@ -163,7 +166,7 @@ def buscar(page, url: str, nombre: str, cfg: dict) -> list[Vuelo]:
         pass
 
     labels = page.eval_on_selector_all(
-        "li [aria-label*='Swedish kronor']",
+        SELECTOR,
         "els => els.map(e => e.getAttribute('aria-label'))",
     )
     vuelos, vistos = [], set()
