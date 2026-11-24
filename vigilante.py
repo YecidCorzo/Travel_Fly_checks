@@ -327,6 +327,23 @@ def revisar_grupo(page, g: dict, cfg: dict) -> dict:
     O, D = cfg["aeropuerto_origen"], cfg["aeropuerto_destino"]
     o, d, n, esc = cfg["origen"], cfg["destino"], g["adultos"], cfg["max_escalas"]
     nombre = g["nombre"]
+
+    # Persona que solo vuela de ida (sin "vuelta" en la configuración)
+    if not g.get("vuelta"):
+        b = buscar(page, "solo ida", tfs_url([(g["ida"], O, D)], n),
+                   texto_url(o, d, g["ida"], None, n, esc), nombre, cfg)
+        opciones = []
+        if b.vuelos:
+            v = b.vuelos[0]
+            opciones.append(Opcion(v.precio, "solo ida",
+                                   f"{v.aerolineas} · {v.salida}–{v.llegada} · "
+                                   f"{v.escalas} escala/s", b.url))
+        mejor = opciones[0] if opciones else None
+        if mejor:
+            log(f"  solo ida: {sek(mejor.precio)} · {mejor.detalle}  <-- mejor")
+        return {"grupo": g, "busquedas": [b], "opciones": opciones,
+                "mejor": mejor, "avisos": []}
+
     busquedas: list[Busqueda] = [
         buscar(page, "ida y vuelta",
                tfs_url([(g["ida"], O, D), (g["vuelta"], D, O)], n),
@@ -489,7 +506,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
 <section class='card'>
   <div class='card-head'>
     <div><h3>{e(g['nombre'])}</h3>
-      <div class='muted'>{e(g['ida'])} → {e(g['vuelta'])} · {g['adultos']} adulto(s) ·
+      <div class='muted'>{e(g['ida'])} → {e(g.get('vuelta') or 'solo ida')} · {g['adultos']} adulto(s) ·
       {e(cfg['aeropuerto_origen'])} ⇄ {e(cfg['aeropuerto_destino'])}</div></div>
     <div class='big'>{sek(mejor.precio) if mejor else '—'}</div>
   </div>
@@ -553,7 +570,7 @@ def generar_informe(resultados: list[dict], total: int | None, historial: dict,
   <div class="sub">Semana Santa 2027 · {', '.join(e(a) for a in cfg['aerolineas']) or 'todas las aerolíneas'}
     · máx. {cfg['max_escalas']} escala(s)</div>
   <div class="total">{sek(total)}</div>
-  <div class="sub">total para todo el grupo, ida y vuelta</div>
+  <div class="sub">total para todo el grupo</div>
   <span class="pill {estado[0]}">{estado[1]}</span>
   {f'<ul>{motivos_html}</ul>' if motivos_html else ''}
   <div class="stats"><div>📉 Mínimo histórico: <b>{sek(minimo)}</b></div>

@@ -8,11 +8,12 @@ Comprueba cada hora el precio de los vuelos de Semana Santa 2027 en Google Fligh
 |---|---|---|---|
 | Grupo | 26 mar 2027 | 1 abr 2027 | 3 adultos |
 | Cuarta persona | 26 mar 2027 | 4 abr 2027 | 1 adulto |
+| Quinta persona | 26 mar 2027 | — (solo ida) | 1 adulto |
 
 - Máximo **1 escala**.
 - Solo **SAS, Norwegian y Lufthansa** (todas las aerolíneas del vuelo deben estar en la lista).
 - **Combina aerolíneas:** además del billete de ida y vuelta, busca solo ida y solo vuelta por separado (p. ej. ida con Norwegian + vuelta con SAS) y se queda con lo más barato. Dentro de un vuelo con escala también acepta mezclas, como SAS + Lufthansa.
-- Suma el precio más barato de cada búsqueda y te da el **total para las 4 personas**, en SEK.
+- Suma el precio más barato de cada búsqueda y te da el **total para todo el grupo**, en SEK.
 
 **Cuándo avisa:**
 - Cuando el total marca un **nuevo mínimo** y baja al menos `bajada_minima_sek` (200 SEK por defecto). Así no te llegan avisos por cambios de 10 coronas.
@@ -54,7 +55,7 @@ cp config.example.json config.json      # Windows: copy config.example.json conf
 
 | Campo | Qué hace |
 |---|---|
-| `busquedas` | Fechas y número de adultos de cada búsqueda |
+| `busquedas` | Fechas y número de adultos de cada búsqueda. Con `"vuelta": null` busca solo ida |
 | `aerolineas` | Aerolíneas permitidas (deja `[]` para aceptar cualquiera) |
 | `combinar_aerolineas` | `true` = compara también dos billetes de solo ida con aerolíneas distintas |
 | `aeropuerto_origen` / `aeropuerto_destino` | Códigos IATA (ARN = Arlanda, BCN = Barcelona) |
