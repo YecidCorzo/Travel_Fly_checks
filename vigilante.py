@@ -272,7 +272,10 @@ LEER_TARJETAS_JS = """(sel) => {
         const etiquetas = [card.getAttribute('aria-label') || '']
             .concat([...card.querySelectorAll('[aria-label]')].map(a => a.getAttribute('aria-label')));
         const principal = etiquetas.find(t => /flight with|Leaves /i.test(t || '')) || '';
-        out.push({principal, texto: (card.innerText || '').replace(/\\s+/g, ' ').trim()});
+        const texto = (card.innerText || '').replace(/\\s+/g, ' ').trim();
+        // Solo tarjetas de vuelo de verdad (con descripción o con horario), no el pie de página
+        if (!principal && !/\\d{1,2}:\\d{2}/.test(texto)) continue;
+        out.push({principal, texto});
     }
     return out;
 }"""
@@ -291,19 +294,18 @@ class Busqueda:
 def cargar_y_leer(page, url: str) -> list[dict] | None:
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     aceptar_cookies(page)
-    try:
-        page.wait_for_selector(SELECTOR, timeout=25000)
-    except Exception:
-        return None
-    # Espera a que la lista termine de cargar: mismo número de tarjetas dos veces seguidas
+    # Espera (hasta ~35 s) a que haya tarjetas de vuelo y su número deje de cambiar
     anterior, tarjetas = -1, []
-    for _ in range(15):
-        page.wait_for_timeout(1500)
-        tarjetas = page.evaluate(LEER_TARJETAS_JS, SELECTOR)
+    for _ in range(25):
+        page.wait_for_timeout(1400)
+        try:
+            tarjetas = page.evaluate(LEER_TARJETAS_JS, SELECTOR)
+        except Exception:
+            tarjetas = []
         if len(tarjetas) >= 3 and len(tarjetas) == anterior:
             break
         anterior = len(tarjetas)
-    return tarjetas
+    return tarjetas or None
 
 
 def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict) -> Busqueda:
