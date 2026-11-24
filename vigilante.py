@@ -116,11 +116,16 @@ def aerolinea_permitida(vuelo: Vuelo, permitidas: list[str]) -> bool:
     return bool(partes) and all(any(a in p for a in perm) for p in partes)
 
 
-def google_flights_url(origen: str, destino: str, ida: str, vuelta: str,
+def google_flights_url(origen: str, destino: str, ida: str, vuelta: str | None,
                        adultos: int, max_escalas: int) -> str:
+    """Si vuelta es None, busca solo ida (one way)."""
     escalas_txt = "nonstop" if max_escalas == 0 else f"{max_escalas} stop or fewer"
-    q = (f"Flights from {origen} to {destino} on {ida} through {vuelta} "
-         f"for {adultos} adults {escalas_txt}")
+    if vuelta:
+        q = (f"Flights from {origen} to {destino} on {ida} through {vuelta} "
+             f"for {adultos} adults {escalas_txt}")
+    else:
+        q = (f"One way flights from {origen} to {destino} on {ida} "
+             f"for {adultos} adults {escalas_txt}")
     params = {"q": q, "hl": "en", "gl": "SE", "curr": "SEK"}
     return "https://www.google.com/travel/flights?" + urllib.parse.urlencode(params)
 
@@ -137,12 +142,8 @@ def aceptar_cookies(page) -> None:
             pass
 
 
-def buscar(page, busqueda: dict, cfg: dict) -> list[Vuelo]:
-    url = google_flights_url(
-        cfg["origen"], cfg["destino"], busqueda["ida"], busqueda["vuelta"],
-        busqueda["adultos"], cfg["max_escalas"],
-    )
-    log(f"Buscando '{busqueda['nombre']}': {url}")
+def buscar(page, url: str, nombre: str, cfg: dict) -> list[Vuelo]:
+    log(f"Buscando '{nombre}': {url}")
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     aceptar_cookies(page)
     try:
@@ -176,6 +177,62 @@ def buscar(page, busqueda: dict, cfg: dict) -> list[Vuelo]:
     vuelos.sort(key=lambda v: v.precio)
     log(f"  {len(labels)} resultados, {len(vuelos)} cumplen los filtros")
     return vuelos
+
+
+@dataclass
+class Opcion:
+    precio: int
+    tipo: str      # "ida y vuelta" o "combinada"
+    detalle: str
+    url: str
+
+
+def mejor_opcion(page, b: dict, cfg: dict) -> Opcion | None:
+    """
+    Devuelve la opción más barata para una búsqueda:
+      - billete de ida y vuelta (misma reserva), o
+      - combinación de dos billetes de solo ida, que permite mezclar
+        aerolíneas (p. ej. ida con SAS y vuelta con Norwegian).
+    """
+    o, d, n, esc = cfg["origen"], cfg["destino"], b["adultos"], cfg["max_escalas"]
+    opciones: list[Opcion] = []
+
+    # 1) Ida y vuelta en la misma reserva
+    url_iv = google_flights_url(o, d, b["ida"], b["vuelta"], n, esc)
+    try:
+        iv = buscar(page, url_iv, f"{b['nombre']} · ida y vuelta", cfg)
+        if iv:
+            v = iv[0]
+            opciones.append(Opcion(
+                v.precio, "ida y vuelta",
+                f"{v.aerolineas} ({v.escalas} escala/s), sale {v.salida}", url_iv))
+    except Exception as e:
+        log(f"  ERROR ida y vuelta: {e}")
+
+    # 2) Combinación de dos billetes de solo ida
+    if cfg.get("combinar_aerolineas", True):
+        url_ida = google_flights_url(o, d, b["ida"], None, n, esc)
+        url_vta = google_flights_url(d, o, b["vuelta"], None, n, esc)
+        try:
+            idas = buscar(page, url_ida, f"{b['nombre']} · solo ida", cfg)
+            vueltas = buscar(page, url_vta, f"{b['nombre']} · solo vuelta", cfg)
+            if idas and vueltas:
+                vi, vv = idas[0], vueltas[0]
+                opciones.append(Opcion(
+                    vi.precio + vv.precio, "combinada",
+                    f"Ida {vi.aerolineas} {vi.precio} SEK ({vi.escalas} escala/s) + "
+                    f"Vuelta {vv.aerolineas} {vv.precio} SEK ({vv.escalas} escala/s)",
+                    url_ida))
+        except Exception as e:
+            log(f"  ERROR combinación: {e}")
+
+    if not opciones:
+        return None
+    mejor = min(opciones, key=lambda x: x.precio)
+    for op in opciones:
+        marca = "  <-- mejor" if op is mejor else ""
+        log(f"  {op.tipo}: {op.precio} SEK · {op.detalle}{marca}")
+    return mejor
 
 
 # --------------------------------------------------------------------------- #
@@ -219,31 +276,21 @@ def comprobar(cfg: dict, visible: bool = False) -> None:
 
     historial = load_json(HISTORY_PATH, {"registros": [], "minimos": {}})
     ahora = datetime.now().isoformat(timespec="minutes")
-    resultados: dict[str, Vuelo | None] = {}
+    resultados: dict[str, Opcion | None] = {}
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=not visible)
         context = browser.new_context(locale="en-GB", timezone_id="Europe/Stockholm")
         page = context.new_page()
         for b in cfg["busquedas"]:
-            try:
-                vuelos = buscar(page, b, cfg)
-                resultados[b["nombre"]] = vuelos[0] if vuelos else None
-                if vuelos:
-                    v = vuelos[0]
-                    log(f"  Mejor: {v.precio} SEK · {v.aerolineas} · "
-                        f"{v.escalas} escala(s) · {v.salida}")
-            except Exception as e:
-                log(f"  ERROR en '{b['nombre']}': {e}")
-                resultados[b["nombre"]] = None
+            resultados[b["nombre"]] = mejor_opcion(page, b, cfg)
         browser.close()
 
     if any(v is None for v in resultados.values()):
         log("Alguna búsqueda falló o no tuvo vuelos válidos; no se compara el total.")
         historial["registros"].append({
             "fecha": ahora,
-            "busquedas": {k: (asdict(v) | {"texto": None}) if v else None
-                          for k, v in resultados.items()},
+            "busquedas": {k: asdict(v) if v else None for k, v in resultados.items()},
         })
         save_json(HISTORY_PATH, historial)
         return
@@ -256,7 +303,7 @@ def comprobar(cfg: dict, visible: bool = False) -> None:
     historial["registros"].append({
         "fecha": ahora,
         "total": total,
-        "busquedas": {k: asdict(v) | {"texto": None} for k, v in resultados.items()},
+        "busquedas": {k: asdict(v) for k, v in resultados.items()},
     })
     log(f"TOTAL para todo el grupo: {total} SEK "
         f"(mínimo anterior: {minimo_anterior if minimo_anterior else '—'})")
@@ -275,14 +322,11 @@ def comprobar(cfg: dict, visible: bool = False) -> None:
     save_json(HISTORY_PATH, historial)
 
     if motivos:
-        lineas = [f"{k}: {v.precio} SEK ({v.aerolineas}, {v.escalas} escala/s)"
+        lineas = [f"{k}: {v.precio} SEK [{v.tipo}] {v.detalle}"
                   for k, v in resultados.items()]
         mensaje = (f"Total {total} SEK — " + "; ".join(motivos) + "\n" +
                    "\n".join(lineas))
-        primera = cfg["busquedas"][0]
-        url = google_flights_url(cfg["origen"], cfg["destino"], primera["ida"],
-                                 primera["vuelta"], primera["adultos"],
-                                 cfg["max_escalas"])
+        url = next(iter(resultados.values())).url
         notificar("✈️ Bajada de precio Estocolmo–Barcelona", mensaje, cfg, url)
         log("Notificación enviada: " + "; ".join(motivos))
     else:

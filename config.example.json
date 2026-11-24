@@ -3,6 +3,7 @@
   "destino": "Barcelona",
   "max_escalas": 1,
   "aerolineas": ["SAS", "Norwegian", "Lufthansa"],
+  "combinar_aerolineas": true,
 
   "busquedas": [
     { "nombre": "3 personas (26 mar – 1 abr)", "ida": "2027-03-26", "vuelta": "2027-04-01", "adultos": 3 },

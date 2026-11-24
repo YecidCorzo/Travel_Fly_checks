@@ -11,6 +11,7 @@ Comprueba cada hora el precio de los vuelos de Semana Santa 2027 en Google Fligh
 
 - Máximo **1 escala**.
 - Solo **SAS, Norwegian y Lufthansa** (todas las aerolíneas del vuelo deben estar en la lista).
+- **Combina aerolíneas:** además del billete de ida y vuelta, busca solo ida y solo vuelta por separado (p. ej. ida con Norwegian + vuelta con SAS) y se queda con lo más barato. Dentro de un vuelo con escala también acepta mezclas, como SAS + Lufthansa.
 - Suma el precio más barato de cada búsqueda y te da el **total para las 4 personas**, en SEK.
 
 **Cuándo avisa:**
@@ -44,6 +45,7 @@ cp config.example.json config.json      # Windows: copy config.example.json conf
 |---|---|
 | `busquedas` | Fechas y número de adultos de cada búsqueda |
 | `aerolineas` | Aerolíneas permitidas (deja `[]` para aceptar cualquiera) |
+| `combinar_aerolineas` | `true` = compara también dos billetes de solo ida con aerolíneas distintas |
 | `max_escalas` | `1` = directo o una escala |
 | `precio_objetivo_total` | Ej. `12000`: avisa siempre que el total esté por debajo |
 | `bajada_minima_sek` | Cuánto tiene que bajar para contar como nuevo mínimo |
@@ -89,6 +91,7 @@ En macOS puede que tengas que dar a la Terminal permiso de "Acceso total al disc
 ## Notas
 - El ordenador tiene que estar encendido (no en reposo) para que se ejecute.
 - Los precios de Google Flights son ida y vuelta, total para los adultos de cada búsqueda. Confírmalo siempre en la web de la aerolínea antes de comprar.
-- El filtro de aerolíneas se aplica al vuelo de ida que muestra Google Flights. La vuelta se elige al reservar.
+- En el billete de ida y vuelta, el filtro de aerolíneas se aplica a la ida que muestra Google Flights; la vuelta se elige al reservar. En la opción combinada se filtran las dos.
+- Una opción combinada son **dos reservas distintas**: si un vuelo se cancela o cambia, la otra aerolínea no está obligada a ayudarte. Cada búsqueda hace hasta 3 consultas, así que una comprobación completa tarda unos minutos.
 - Si Google cambia su página y deja de encontrar resultados, se guarda una captura en `ultimo_error.png`. Revísala o ejecuta con `--visible` para ver qué pasa.
 - Consulta con moderación: una vez por hora está bien. Comprobar con más frecuencia puede hacer que Google muestre captchas.
