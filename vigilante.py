@@ -78,9 +78,9 @@ class Vuelo:
     texto: str
 
 
-PRICE_RE = re.compile(r"(\d[\d.,\u00a0\u202f ]*\d|\d)\s*(?:Swedish kronor|SEK|kr)\b", re.I)
+PRICE_RE = re.compile(r"(\d[\d.,\u00a0\u202f ]*\d|\d)\s*(?:Swedish kronor|SEK|kr)\b|\bSEK\s*(\d[\d.,\u00a0\u202f ]*\d)", re.I)
 SELECTOR = "[aria-label*='kronor'], [aria-label*='SEK']"
-STOPS_RE = re.compile(r"(Nonstop|(\d+)\s+stops?)\s+flight", re.I)
+STOPS_RE = re.compile(r"(Nonstop|Direct|(\d+)\s+stops?)\b", re.I)
 AIRLINE_RE = re.compile(r"flight with\s+(.+?)\.", re.I)
 LEAVES_RE = re.compile(r"Leaves\s+(.+?)\s+and arrives", re.I)
 DURATION_RE = re.compile(r"Total duration\s+(.+?)\.", re.I)
@@ -92,15 +92,24 @@ def parse_aria_label(label: str) -> Vuelo | None:
     m_stops = STOPS_RE.search(label)
     if not m_price or not m_stops:
         return None
-    precio = int(re.sub(r"\D", "", m_price.group(1)) or 0)
-    escalas = 0 if m_stops.group(1).lower() == "nonstop" else int(m_stops.group(2))
+    precio = int(re.sub(r"\D", "", m_price.group(1) or m_price.group(2)) or 0)
+    escalas = int(m_stops.group(2)) if m_stops.group(2) else 0
     m_air = AIRLINE_RE.search(label)
+    aerolineas = m_air.group(1).strip() if m_air else None
+    if not aerolineas:
+        # Plan B: buscar nombres de aerolíneas conocidas en el texto de la tarjeta
+        conocidas = ["SAS", "Norwegian", "Lufthansa", "KLM", "Air France", "Ryanair",
+                     "Vueling", "easyJet", "Finnair", "Swiss", "Austrian", "Brussels",
+                     "Eurowings", "Iberia", "Wizz", "airBaltic", "Turkish", "LOT",
+                     "Condor", "TAP", "Edelweiss", "Lauda"]
+        vistos = [a for a in conocidas if re.search(rf"\b{re.escape(a)}\b", label)]
+        aerolineas = " and ".join(vistos) if vistos else "?"
     m_leave = LEAVES_RE.search(label)
     m_dur = DURATION_RE.search(label)
     return Vuelo(
         precio=precio,
         escalas=escalas,
-        aerolineas=m_air.group(1).strip() if m_air else "?",
+        aerolineas=aerolineas,
         salida=m_leave.group(1).strip() if m_leave else "?",
         duracion=m_dur.group(1).strip() if m_dur else "?",
         texto=label,
@@ -165,10 +174,26 @@ def buscar(page, url: str, nombre: str, cfg: dict) -> list[Vuelo]:
     except Exception:
         pass
 
-    labels = page.eval_on_selector_all(
-        SELECTOR,
-        "els => els.map(e => e.getAttribute('aria-label'))",
-    )
+    # Junta, por cada tarjeta de vuelo (<li>), todas sus etiquetas y su texto visible
+    labels = page.evaluate("""(sel) => {
+        const out = [], vistos = new Set();
+        for (const el of document.querySelectorAll(sel)) {
+            const card = el.closest('li') || el;
+            if (vistos.has(card)) continue;
+            vistos.add(card);
+            const partes = [card.getAttribute('aria-label') || ''];
+            for (const a of card.querySelectorAll('[aria-label]'))
+                partes.push(a.getAttribute('aria-label'));
+            partes.push((card.innerText || '').replace(/\\s+/g, ' '));
+            out.push(partes.filter(Boolean).join(' | '));
+        }
+        return out;
+    }""", SELECTOR)
+    try:
+        (BASE / "debug_resultados.txt").write_text(
+            f"{page.url}\n\n" + "\n\n".join(labels), encoding="utf-8")
+    except OSError:
+        pass
     vuelos, vistos = [], set()
     for lab in labels:
         v = parse_aria_label(lab or "")
@@ -179,6 +204,10 @@ def buscar(page, url: str, nombre: str, cfg: dict) -> list[Vuelo]:
             vuelos.append(v)
     vuelos.sort(key=lambda v: v.precio)
     log(f"  {len(labels)} resultados, {len(vuelos)} cumplen los filtros")
+    if labels and not vuelos:
+        for lab in labels[:2]:
+            v = parse_aria_label(lab or "")
+            log(f"    ejemplo leído: {asdict(v) if v else 'no se pudo leer'} <- {lab[:200]}")
     return vuelos
 
 
