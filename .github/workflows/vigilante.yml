@@ -1,0 +1,79 @@
+name: Vigilante de vuelos
+
+on:
+  workflow_dispatch:        # se lanza a mano (o desde Claude)
+  # Para que también se ejecute solo cada 3 horas, quita el # de las dos líneas siguientes:
+  # schedule:
+  #   - cron: "17 */3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vigilante
+  cancel-in-progress: false
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Descargar resultados anteriores
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: resultados
+          path: resultados_previos
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Playwright
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Preparar configuración e historial
+        run: |
+          cp config.example.json config.json
+          if [ -f resultados_previos/historial_precios.json ]; then
+            cp resultados_previos/historial_precios.json .
+          fi
+
+      - name: Buscar vuelos
+        env:
+          NTFY_TEMA: ${{ secrets.NTFY_TEMA }}
+        run: python vigilante.py
+
+      - name: Guardar resultados en la rama "resultados"
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p out
+          for f in historial_precios.json resumen.json informe.html vigilante.log debug_resultados.txt ultimo_error.png; do
+            [ -f "$f" ] && cp "$f" out/
+          done
+          cd out
+          git init -q
+          git checkout -q -b resultados
+          git add -A
+          git -c user.name="vigilante-bot" -c user.email="vigilante-bot@users.noreply.github.com" \
+            commit -q -m "Resultados $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" resultados
+
+      - name: Subir informe como archivo descargable
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-vuelos
+          path: |
+            informe.html
+            resumen.json
+            debug_resultados.txt
+          if-no-files-found: ignore
+          retention-days: 14

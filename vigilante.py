@@ -69,6 +69,13 @@ def load_config() -> dict:
     cfg = load_json(CONFIG_PATH, {})
     cfg.setdefault("aeropuerto_origen", "ARN")
     cfg.setdefault("aeropuerto_destino", "BCN")
+    import os
+    if os.environ.get("CI"):
+        # En GitHub Actions: sin escritorio ni navegador para abrir el informe
+        cfg.setdefault("notificaciones", {})["escritorio"] = False
+        cfg["abrir_informe_si_baja"] = False
+    if os.environ.get("NTFY_TEMA"):
+        cfg.setdefault("notificaciones", {})["ntfy_tema"] = os.environ["NTFY_TEMA"]
     return cfg
 
 
@@ -672,6 +679,22 @@ def comprobar(cfg: dict, visible: bool = False, abrir: bool = False) -> None:
             historial["minimos"] = {"total": total, "fecha": ahora}
 
     save_json(HISTORY_PATH, historial)
+    save_json(BASE / "resumen.json", {
+        "fecha": ahora,
+        "total": total if completo else None,
+        "minimo_historico": historial.get("minimos", {}),
+        "motivos_aviso": motivos,
+        "grupos": [{
+            "nombre": r["grupo"]["nombre"],
+            "mejor": asdict(r["mejor"]) if r["mejor"] else None,
+            "opciones": [asdict(o) for o in r["opciones"]],
+            "avisos": r["avisos"],
+            "busquedas": [{"tipo": b.tipo, "resultados": b.total_resultados,
+                           "cumplen_filtros": len(b.vuelos), "error": b.error,
+                           "top": [asdict(v) | {"texto": None} for v in b.vuelos[:3]]}
+                          for b in r["busquedas"]],
+        } for r in resultados],
+    })
     generar_informe(resultados, total if completo else None, historial, motivos, cfg)
 
     if motivos:

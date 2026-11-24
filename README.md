@@ -105,6 +105,15 @@ Para quitarla: `Unregister-ScheduledTask -TaskName VigilanteVuelosBarcelona`
 ```
 En macOS puede que tengas que dar a la Terminal permiso de "Acceso total al disco" para que cron funcione.
 
+## 5. Ejecutarlo en GitHub (sin tener el Mac encendido)
+
+El repositorio incluye un flujo de GitHub Actions (`.github/workflows/vigilante.yml`):
+- Lánzalo en la pestaña **Actions → Vigilante de vuelos → Run workflow**, o pídeselo a Claude.
+- Usa `config.example.json` como configuración.
+- Guarda `historial_precios.json`, `resumen.json` e `informe.html` en la rama **`resultados`**, así el historial se mantiene entre ejecuciones.
+- Para recibir avisos en el móvil: **Settings → Secrets and variables → Actions → New repository secret**, con el nombre `NTFY_TEMA` y tu tema de ntfy como valor.
+- Si quieres que se ejecute solo cada 3 horas, quita el `#` de las líneas `schedule` del archivo del flujo.
+
 ## Notas
 - El ordenador tiene que estar encendido (no en reposo) para que se ejecute.
 - Los precios de Google Flights son ida y vuelta, total para los adultos de cada búsqueda. Confírmalo siempre en la web de la aerolínea antes de comprar.
