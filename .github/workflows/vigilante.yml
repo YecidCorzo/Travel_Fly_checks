@@ -55,7 +55,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p out
-          for f in historial_precios.json resumen.json informe.html vigilante.log debug_resultados.txt ultimo_error.png; do
+          for f in historial_precios.json resumen.json informe.html vigilante.log debug_resultados.txt ultimo_error.png ultimo_error_exacta.png; do
             [ -f "$f" ] && cp "$f" out/
           done
           cd out

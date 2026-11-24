@@ -281,6 +281,9 @@ LEER_TARJETAS_JS = """(sel) => {
 }"""
 
 
+FALLOS_SEGUIDOS = 0  # si Google falla 2 veces seguidas, no insistir en esta comprobación
+
+
 @dataclass
 class Busqueda:
     tipo: str
@@ -311,8 +314,17 @@ def cargar_y_leer(page, url: str) -> list[dict] | None:
 def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict) -> Busqueda:
     log(f"Buscando '{nombre} · {tipo}'")
     b = Busqueda(tipo=tipo, url=url)
+    global FALLOS_SEGUIDOS
+    if FALLOS_SEGUIDOS >= 2:
+        b.error = "Omitida: Google no está devolviendo resultados ahora mismo"
+        log("  " + b.error)
+        return b
     tarjetas = cargar_y_leer(page, url)
     if not tarjetas:
+        try:
+            page.screenshot(path=str(BASE / "ultimo_error_exacta.png"), full_page=True)
+        except Exception:
+            pass
         log("  sin resultados con la URL exacta; probando búsqueda por texto")
         b.url = url_respaldo
         tarjetas = cargar_y_leer(page, url_respaldo)
@@ -322,11 +334,13 @@ def buscar(page, tipo: str, url: str, url_respaldo: str, nombre: str, cfg: dict)
     except Exception:
         pass
     if not tarjetas:
+        FALLOS_SEGUIDOS += 1
         page.screenshot(path=str(BASE / "ultimo_error.png"), full_page=True)
         b.error = "No aparecieron resultados (captura en ultimo_error.png)"
         log("  " + b.error)
         return b
 
+    FALLOS_SEGUIDOS = 0
     debug = [f"{page.url}"]
     vuelos, vistos = [], set()
     for t in tarjetas:
