@@ -298,8 +298,8 @@ def cargar_y_leer(page, url: str) -> list[dict] | None:
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     aceptar_cookies(page)
     # Espera (hasta ~35 s) a que haya tarjetas de vuelo y su número deje de cambiar
-    anterior, estables, tarjetas = -1, 0, []
-    for _ in range(25):
+    anterior, estables, tarjetas, recargas = -1, 0, [], 0
+    for _ in range(30):
         page.wait_for_timeout(1400)
         try:
             tarjetas = page.evaluate(LEER_TARJETAS_JS, SELECTOR)
@@ -310,8 +310,26 @@ def cargar_y_leer(page, url: str) -> list[dict] | None:
             break
         if not tarjetas and _sin_precio(page):
             return None
+        if not tarjetas and _error_google(page):
+            if recargas >= 3:
+                return None
+            recargas += 1
+            log(f"  Google dio un error temporal; recargando ({recargas}/3)")
+            page.wait_for_timeout(4000 * recargas)
+            try:
+                page.get_by_role("button", name="Reload").first.click(timeout=3000)
+            except Exception:
+                page.reload(wait_until="domcontentloaded")
         anterior = len(tarjetas)
     return tarjetas or None
+
+
+def _error_google(page) -> bool:
+    """Página de error temporal de Google Flights ("Oops, something went wrong")."""
+    try:
+        return page.get_by_text("something went wrong").count() > 0
+    except Exception:
+        return False
 
 
 def _sin_precio(page) -> bool:
@@ -778,7 +796,17 @@ def comprobar(cfg: dict, visible: bool = False, abrir: bool = False) -> None:
         context = browser.new_context(locale="en-GB", timezone_id="Europe/Stockholm",
                                       viewport={"width": 1280, "height": 1100})
         page = context.new_page()
+        global FALLOS_SEGUIDOS
         resultados = [revisar_grupo(page, g, cfg) for g in cfg["busquedas"]]
+        if not any(r["mejor"] for r in resultados):
+            log("Google no respondió; espero 90 s y lo intento otra vez con un navegador nuevo")
+            context.close()
+            time.sleep(90)
+            context = browser.new_context(locale="en-GB", timezone_id="Europe/Stockholm",
+                                          viewport={"width": 1280, "height": 1100})
+            page = context.new_page()
+            FALLOS_SEGUIDOS = 0
+            resultados = [revisar_grupo(page, g, cfg) for g in cfg["busquedas"]]
         for aero in cfg.get("comparar_tambien_solo", ["SAS"]):
             for r in resultados:
                 r.setdefault("solo", {})[aero] = revisar_solo_aerolinea(page, r["grupo"], cfg, aero)
