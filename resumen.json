@@ -1,0 +1,266 @@
+{
+  "fecha": "2026-11-27T07:55",
+  "total": 10364,
+  "minimo_historico": {
+    "total": 10238,
+    "fecha": "2026-11-24T20:33"
+  },
+  "motivos_aviso": [],
+  "totales_solo_aerolinea": {
+    "SAS": null
+  },
+  "grupos": [
+    {
+      "nombre": "1 adulto + 2 jóvenes (26 mar – 1 abr)",
+      "mejor": {
+        "precio": 6981,
+        "tipo": "ida y vuelta",
+        "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+        "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+      },
+      "opciones": [
+        {
+          "precio": 6981,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        {
+          "precio": 7361,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 5 196 kr + Vuelta Norwegian 2 165 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIDAQEBSAGYAQI%3D&hl=en&gl=SE&curr=SEK"
+        }
+      ],
+      "avisos": [],
+      "solo_aerolinea": {
+        "SAS": {
+          "mejor": null,
+          "sin_precio_en_google": true,
+          "errores": [
+            "No aparecieron resultados (captura en ultimo_error.png)",
+            "Google muestra estos vuelos pero sin precio (Price unavailable)",
+            "Google muestra estos vuelos pero sin precio (Price unavailable)"
+          ],
+          "opciones": []
+        }
+      },
+      "busquedas": [
+        {
+          "tipo": "ida y vuelta",
+          "resultados": 16,
+          "cumplen_filtros": 3,
+          "error": "",
+          "top": [
+            {
+              "precio": 6981,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "5:15 PM",
+              "llegada": "10:45 PM",
+              "duracion": "5 hr 30 min",
+              "texto": null
+            },
+            {
+              "precio": 7275,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "12:30 PM",
+              "llegada": "4:10 PM",
+              "duracion": "3 hr 40 min",
+              "texto": null
+            },
+            {
+              "precio": 9159,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "7:00 AM",
+              "llegada": "11:45 AM",
+              "duracion": "4 hr 45 min",
+              "texto": null
+            }
+          ]
+        },
+        {
+          "tipo": "solo ida",
+          "resultados": 16,
+          "cumplen_filtros": 3,
+          "error": "",
+          "top": [
+            {
+              "precio": 5196,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "5:15 PM",
+              "llegada": "10:45 PM",
+              "duracion": "5 hr 30 min",
+              "texto": null
+            },
+            {
+              "precio": 5490,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "12:30 PM",
+              "llegada": "4:10 PM",
+              "duracion": "3 hr 40 min",
+              "texto": null
+            },
+            {
+              "precio": 7374,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "7:00 AM",
+              "llegada": "11:45 AM",
+              "duracion": "4 hr 45 min",
+              "texto": null
+            }
+          ]
+        },
+        {
+          "tipo": "solo vuelta",
+          "resultados": 20,
+          "cumplen_filtros": 5,
+          "error": "",
+          "top": [
+            {
+              "precio": 2165,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "7:50 AM",
+              "llegada": "11:25 AM",
+              "duracion": "3 hr 35 min",
+              "texto": null
+            },
+            {
+              "precio": 4566,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "1:10 PM",
+              "llegada": "7:00 PM",
+              "duracion": "5 hr 50 min",
+              "texto": null
+            },
+            {
+              "precio": 4816,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "12:40 PM",
+              "llegada": "6:20 PM",
+              "duracion": "5 hr 40 min",
+              "texto": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "1 adulto (26 mar – 4 abr)",
+      "mejor": {
+        "precio": 3383,
+        "tipo": "combinada",
+        "detalle": "Ida Norwegian 1 732 kr + Vuelta Norwegian 1 651 kr",
+        "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIBAUgBmAEC&hl=en&gl=SE&curr=SEK"
+      },
+      "opciones": [
+        {
+          "precio": 3383,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 1 732 kr + Vuelta Norwegian 1 651 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIBAUgBmAEC&hl=en&gl=SE&curr=SEK"
+        }
+      ],
+      "avisos": [],
+      "solo_aerolinea": {
+        "SAS": {
+          "mejor": null,
+          "sin_precio_en_google": true,
+          "errores": [
+            "Google muestra estos vuelos pero sin precio (Price unavailable)",
+            "Google muestra estos vuelos pero sin precio (Price unavailable)",
+            "Google muestra estos vuelos pero sin precio (Price unavailable)"
+          ],
+          "opciones": []
+        }
+      },
+      "busquedas": [
+        {
+          "tipo": "ida y vuelta",
+          "resultados": 0,
+          "cumplen_filtros": 0,
+          "error": "No aparecieron resultados (captura en ultimo_error.png)",
+          "top": []
+        },
+        {
+          "tipo": "solo ida",
+          "resultados": 16,
+          "cumplen_filtros": 3,
+          "error": "",
+          "top": [
+            {
+              "precio": 1732,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "5:15 PM",
+              "llegada": "10:45 PM",
+              "duracion": "5 hr 30 min",
+              "texto": null
+            },
+            {
+              "precio": 1830,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "12:30 PM",
+              "llegada": "4:10 PM",
+              "duracion": "3 hr 40 min",
+              "texto": null
+            },
+            {
+              "precio": 2458,
+              "escalas": 1,
+              "aerolineas": "Norwegian",
+              "salida": "7:00 AM",
+              "llegada": "11:45 AM",
+              "duracion": "4 hr 45 min",
+              "texto": null
+            }
+          ]
+        },
+        {
+          "tipo": "solo vuelta",
+          "resultados": 18,
+          "cumplen_filtros": 3,
+          "error": "",
+          "top": [
+            {
+              "precio": 1651,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "7:50 AM",
+              "llegada": "11:25 AM",
+              "duracion": "3 hr 35 min",
+              "texto": null
+            },
+            {
+              "precio": 2378,
+              "escalas": 0,
+              "aerolineas": "Norwegian",
+              "salida": "8:05 PM",
+              "llegada": "11:40 PM",
+              "duracion": "3 hr 35 min",
+              "texto": null
+            },
+            {
+              "precio": 4114,
+              "escalas": 1,
+              "aerolineas": "Lufthansa",
+              "salida": "6:40 PM",
+              "llegada": "11:40 PM",
+              "duracion": "5 hr",
+              "texto": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

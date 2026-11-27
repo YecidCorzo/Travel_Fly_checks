@@ -1,0 +1,210 @@
+{
+  "registros": [
+    {
+      "fecha": "2026-11-24T20:33",
+      "total": 10238,
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6969,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3269,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-24T20:35",
+      "total": 10326,
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6969,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3357,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 1 700 kr + Vuelta Norwegian 1 657 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIBAUgBmAEC&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-24T20:36",
+      "total": 10238,
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6969,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3269,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-24T20:47",
+      "total": 10629,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 7272,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 5 100 kr + Vuelta Norwegian 2 172 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIDAQEBSAGYAQI%3D&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3357,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 1 700 kr + Vuelta Norwegian 1 657 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIBAUgBmAEC&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-24T20:52",
+      "total": null,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": null,
+        "1 adulto (26 mar – 4 abr)": null
+      }
+    },
+    {
+      "fecha": "2026-11-24T21:08",
+      "total": 10238,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6969,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3269,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-24T21:12",
+      "total": 10238,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6969,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3269,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-25T06:06",
+      "total": null,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": null,
+        "1 adulto (26 mar – 4 abr)": null
+      }
+    },
+    {
+      "fecha": "2026-11-25T06:10",
+      "total": 10278,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6978,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3300,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-26T06:26",
+      "total": 10278,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6978,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3300,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTA0agUSA0JDTnIFEgNBUk5CAQFIAZgBAQ%3D%3D&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    },
+    {
+      "fecha": "2026-11-27T07:55",
+      "total": 10364,
+      "totales_solo": {
+        "SAS": null
+      },
+      "grupos": {
+        "1 adulto + 2 jóvenes (26 mar – 1 abr)": {
+          "precio": 6981,
+          "tipo": "ida y vuelta",
+          "detalle": "Norwegian · 5:15 PM–10:45 PM · 1 escala/s",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDThoaEgoyMDI3LTA0LTAxagUSA0JDTnIFEgNBUk5CAwEBAUgBmAEB&hl=en&gl=SE&curr=SEK"
+        },
+        "1 adulto (26 mar – 4 abr)": {
+          "precio": 3383,
+          "tipo": "combinada",
+          "detalle": "Ida Norwegian 1 732 kr + Vuelta Norwegian 1 651 kr",
+          "url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMjZqBRIDQVJOcgUSA0JDTkIBAUgBmAEC&hl=en&gl=SE&curr=SEK"
+        }
+      }
+    }
+  ],
+  "minimos": {
+    "total": 10238,
+    "fecha": "2026-11-24T20:33"
+  }
+}
